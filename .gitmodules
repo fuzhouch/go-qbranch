@@ -1,3 +1,3 @@
 [submodule "grammar/unofficial-bond-grammar"]
-	path = parser/unofficial-bond-grammar
+	path = unofficial-bond-grammar
 	url = https://github.com/fuzhouch/unofficial-bond-grammar
