@@ -25,6 +25,9 @@ package qbranch
 
 // Reader represents an interface that used to read fields from
 // serialized buffer.
+//
+// IMPORTANT: Reader is NOT THREAD SAFE. It keeps an internal state to
+// support moving read pointers like Scan().
 type Reader interface {
 	Scan() (done bool, index uint)
 

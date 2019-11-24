@@ -25,19 +25,22 @@ package qbranch
 
 // Writer represents an interface to support writing fields to byte
 // array to Bond buffer.
+//
+// IMPORTANT: Writer is NOT THREAD SAFE. It can keep internal state,
+// for example, the size of each field, then generates a header later.
 type Writer interface {
-	WriteBool(index uint, value bool)
-	WriteInt8(index uint, value int8)
-	WriteUInt8(index uint, value uint8)
-	WriteInt16(index uint, value int16)
-	WriteUInt16(index uint, value uint16)
-	WriteInt32(index uint, value int32)
-	WriteUInt32(index uint, value uint32)
-	WriteInt64(index uint, value int64)
-	WriteUInt64(index uint, value uint64)
-	WriteString(index uint, value string)
-	WriteWString(index uint, value string)
-	WriteNull(index uint)
+	WriteBool(index uint, value bool) (length uint)
+	WriteInt8(index uint, value int8) (length uint)
+	WriteUInt8(index uint, value uint8) (length uint)
+	WriteInt16(index uint, value int16) (length uint)
+	WriteUInt16(index uint, value uint16) (length uint)
+	WriteInt32(index uint, value int32) (length uint)
+	WriteUInt32(index uint, value uint32) (length uint)
+	WriteInt64(index uint, value int64) (length uint)
+	WriteUInt64(index uint, value uint64) (length uint)
+	WriteString(index uint, value string) (length uint)
+	WriteWString(index uint, value string) (length uint)
+	WriteNull(index uint) (length uint)
 
 	// Container type is implemented in a different way.
 	// As we know all Bond containers are generic, while
@@ -46,7 +49,12 @@ type Writer interface {
 	// basic design goal of Bond, that we want generated
 	// structures to be type safe.
 	//
-	// So, QBranch choose another way to make it work.
-	// For each use of container type like map[string]string, we
-	// create a type alias and provides an WriteAsByte() method.
+	// QBranch choose a different approach. For each use of generic
+	// container, QBranch compiler generates a type for container
+	// type, with a generated Write() method.
+	//     type stringStringMap map[string]string
+	//     type Example struct {
+	//             value stringStringMap
+	//     }
+	// func (c stringStringMap) write() {}
 }
