@@ -30,6 +30,7 @@ package qbranch
 // support moving read pointers like Scan().
 type Reader interface {
 	Scan() (done bool, index uint)
+	Error() error
 
 	// All Read*() functions automatically advance internal pointer
 	// to next position, but happens only when Scan() returns false
