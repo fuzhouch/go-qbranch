@@ -5,6 +5,12 @@ import (
 	"fmt"
 )
 
+var (
+	compactBinaryProtocolSpec ProtocolSpec = ProtocolSpec{
+		Endian: LITTLE_ENDIAN,
+	}
+)
+
 // CompactBinaryWriterV1 implements writer of v1 compact binary.
 type CompactBinaryWriterV1 struct {
 	buf  *bytes.Buffer
@@ -13,10 +19,8 @@ type CompactBinaryWriterV1 struct {
 
 func NewCompactBinaryWriterV1(buf *bytes.Buffer) *CompactBinaryWriterV1 {
 	return &CompactBinaryWriterV1{
-		buf: buf,
-		spec: ProtocolSpec{
-			Endian: LITTLE_ENDIAN,
-		},
+		buf:  buf,
+		spec: compactBinaryProtocolSpec,
 	}
 }
 
@@ -104,6 +108,6 @@ func writeIndex(id uint, typeTag uint8, buf *bytes.Buffer) (length uint, err err
 		return
 	}
 	length = 0
-	err = fmt.Errorf("InvalidIndex:%u", id)
+	err = fmt.Errorf("InvalidIndex:%v", id)
 	return
 }
