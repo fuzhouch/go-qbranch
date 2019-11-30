@@ -1,8 +1,8 @@
 package qbranch
 
 import (
-	"bytes"
 	"fmt"
+	"io"
 )
 
 var (
@@ -11,103 +11,90 @@ var (
 	}
 )
 
-// CompactBinaryWriterV1 implements writer of v1 compact binary.
-type CompactBinaryWriterV1 struct {
-	buf  *bytes.Buffer
-	spec ProtocolSpec
+// CompactBinaryWriter implements writer of v1 compact binary.
+type CompactBinaryWriter struct {
+	version uint
+	buf     io.Writer
+	spec    ProtocolSpec
 }
 
-func NewCompactBinaryWriterV1(buf *bytes.Buffer) *CompactBinaryWriterV1 {
-	return &CompactBinaryWriterV1{
-		buf:  buf,
-		spec: compactBinaryProtocolSpec,
+func NewCompactBinaryWriterV1(buf io.Writer) *CompactBinaryWriter {
+	return &CompactBinaryWriter{
+		version: 1, // Right now we support only v1
+		buf:     buf,
+		spec:    compactBinaryProtocolSpec,
 	}
 }
 
 // Spec returns behavior descriptions of protocol
-func (w *CompactBinaryWriterV1) Spec() ProtocolSpec {
+func (w *CompactBinaryWriter) Spec() ProtocolSpec {
 	return w.spec
 }
 
-func (w *CompactBinaryWriterV1) WriteBool(index uint16, value bool) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteBool(i uint16, v bool) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteInt8(index uint16, value int8) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteInt8(i uint16, v int8) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteUInt8(index uint16, value uint8) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteUInt8(i uint16, v uint8) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteInt16(index uint16, value int16) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteInt16(i uint16, v int16) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteUInt16(index uint16, value uint16) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteUInt16(i uint16, v uint16) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteInt32(index uint16, value int32) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteInt32(i uint16, v int32) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteUInt32(index uint16, value uint32) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteUInt32(i uint16, v uint32) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteInt64(index uint16, value int64) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteInt64(i uint16, v int64) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteUInt64(index uint16, value uint64) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteUInt64(i uint16, v uint64) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteString(index uint16, value string) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteString(i uint16, v string) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteWString(index uint16, value string) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteWString(i uint16, v string) int {
+	return 0
 }
 
-func (w *CompactBinaryWriterV1) WriteNull(index uint16) (length uint) {
-	length = 0
-	return
+func (w *CompactBinaryWriter) WriteNull(i uint16) int {
+	return 0
 }
 
-func writeIndex(id uint, typeTag uint8, buf *bytes.Buffer) (length uint, err error) {
+func writeIndex(id uint, typeTag uint8, buf io.Writer) (int, error) {
+	bytes := [4]byte{0, 0, 0, 0}
 	if id <= 5 {
-		buf.WriteByte(byte(id<<5) | typeTag)
-		length = 1
-		return
+		bytes[0] = byte(id<<5) | typeTag
+		return buf.Write(bytes[:1])
 	} else if id <= 0xFF {
-		buf.WriteByte(byte(id))
-		buf.WriteByte(byte(0xC0) | typeTag)
-		length = 2
-		return
+		bytes[0] = byte(id)
+		bytes[1] = byte(0xC0) | typeTag
+		return buf.Write(bytes[0:2])
 	} else if id <= 0xFFFF {
-		buf.WriteByte(byte(id & 0xF))
-		buf.WriteByte(byte(id & 0xF0 >> 8))
-		buf.WriteByte(byte(id & 0xF00 >> 16))
-		buf.WriteByte(byte(0xE0 | typeTag))
-		length = 4
-		return
+		bytes[0] = byte(id & 0xF)
+		bytes[1] = byte(id & 0xF0 >> 8)
+		bytes[2] = byte(id & 0xF00 >> 16)
+		bytes[3] = byte(0xE0 | typeTag)
+		return buf.Write(bytes[0:])
+		return 4, nil
 	}
-	length = 0
-	err = fmt.Errorf("InvalidIndex:%v", id)
-	return
+	return 0, fmt.Errorf("InvalidIndex:%v", id)
 }
